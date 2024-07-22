@@ -63,9 +63,9 @@ EPOCH_SEC_SIZE = 30
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir", type=str, default="data_edf_20",
+    parser.add_argument("--data_dir", type=str, default="/media/liyue/Dataset/Sleep-edfx/sleep-edf-database-expanded-1.0.0/sleep-cassette",
                         help="File path to the PSG and annotation files.")
-    parser.add_argument("--output_dir", type=str, default="data_edf_20_npz/fpzcz",
+    parser.add_argument("--output_dir", type=str, default="/home/liyue/code/data/prepared_Sleep-EDFX",
                         help="Directory where to save numpy files outputs.")
     parser.add_argument("--select_ch", type=str, default="EEG Fpz-Cz",
                         help="The selected channel")
@@ -92,7 +92,7 @@ def main():
     for i in range(len(psg_fnames)):
         raw = read_raw_edf(psg_fnames[i], preload=True, stim_channel=None)
         sampling_rate = raw.info['sfreq']
-        raw_ch_df = raw.to_data_frame(scaling_time=100.0)[select_ch]
+        raw_ch_df = raw.to_data_frame(scalings=100.0)[select_ch]
         raw_ch_df = raw_ch_df.to_frame()
         raw_ch_df.set_index(np.arange(len(raw_ch_df)))
 
@@ -128,16 +128,16 @@ def main():
                 if duration_sec % EPOCH_SEC_SIZE != 0:
                     raise Exception("Something wrong")
                 duration_epoch = int(duration_sec / EPOCH_SEC_SIZE)
-                label_epoch = np.ones(duration_epoch, dtype=np.int) * label
+                label_epoch = np.ones(duration_epoch, dtype=np.int32) * label
                 labels.append(label_epoch)
-                idx = int(onset_sec * sampling_rate) + np.arange(duration_sec * sampling_rate, dtype=np.int)
+                idx = int(onset_sec * sampling_rate) + np.arange(duration_sec * sampling_rate, dtype=np.int32)
                 label_idx.append(idx)
 
                 print ("Include onset:{}, duration:{}, label:{} ({})".format(
                     onset_sec, duration_sec, label, ann_str
                 ))
             else:
-                idx = int(onset_sec * sampling_rate) + np.arange(duration_sec * sampling_rate, dtype=np.int)
+                idx = int(onset_sec * sampling_rate) + np.arange(duration_sec * sampling_rate, dtype=np.int32)
                 remove_idx.append(idx)
 
                 print ("Remove onset:{}, duration:{}, label:{} ({})".format(
